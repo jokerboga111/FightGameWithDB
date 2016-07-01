@@ -1,0 +1,22 @@
+global class GameFightBatch implements Database.Batchable<sObject>{
+    global Database.QueryLocator start(Database.BatchableContext BC){
+        return Database.getQueryLocator([SELECT Id, Name, Health_Points__c, IsActive__c, Block_Time__c FROM Profile__c ]);
+    }
+
+    global void execute(Database.BatchableContext BC, List<sObject> scope){
+        List<Profile__c> updateUnitList = new List<Profile__c>();
+        for(Profile__c unit: (List<Profile__c>)scope){
+            if (unit.Block_Time__c < DateTime.now().addDays(-1)) {
+                unit.isActive__c = true;
+            }
+            unit.Health_Points__c = 100;
+            updateUnitList.add(unit);
+        }
+        update updateUnitList;
+        system.debug(updateUnitList);
+    }
+
+    global void finish(Database.BatchableContext BC){
+//        system.debug(BC);
+    }
+}
