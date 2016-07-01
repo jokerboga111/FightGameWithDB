@@ -1,0 +1,112 @@
+@isTest
+public class TestGameController {
+    public static GameController gameController=new GameController();
+       @isTest
+    public static void testProfile(){
+        gameController.first = new Profile('Bobby','Human', 700,40,50,60,40);
+        gameController.second = new Profile('Bobby','Human', 700,40,50,60,40);
+        System.assert(gameController.first.Name==gameController.second.Name);
+        
+     }
+    @isTest private static void TestWrapperClass()
+    {
+       GameController.HeroWrapp wrapp = new GameController.HeroWrapp();
+       
+       gameController.SelectFromDatabase();
+       wrapp = gameController.wrappList.get(0); 
+       System.assertEquals(true, wrapp.isDisabled);
+       wrapp = gameController.wrappList.get(1); 
+       System.assertEquals(null, wrapp.isDisabled); 
+    }
+       @isTest
+   public static void testProfiles(){
+        gameController.profiles = [SELECT id, Name, Race__c, Health_Points__c, Min_Dmg__c, Max_Dmg__c, Accuracy__c, 
+                  Dexterity__c,Block_Time__c
+                  FROM Profile__c ORDER BY Race__c];
+       System.assert(gameController.profiles==new List<Profile__c>());
+        
+   }
+     @isTest
+   public static void testCreateNewFighterHuman(){
+        gameController.CreatingHeroName='Boris';
+       gameController.SelectRace='Human';
+       gameController.CreateNewFighter();
+        }
+      @isTest
+   public static void testCreateNewFighterOrk(){
+        gameController.CreatingHeroName='Ork';
+       gameController.SelectRace='Ork';
+       gameController.CreateNewFighter();
+        }
+     @isTest
+     public static void testCreateNewFighterDwarf(){
+        gameController.CreatingHeroName='Dwarf';
+       gameController.SelectRace='Dwarf';
+       gameController.CreateNewFighter();
+        }
+     @isTest
+     public static void testCreateNewFighterElven(){
+        gameController.CreatingHeroName='Elven';
+       gameController.SelectRace='Elven';
+       gameController.CreateNewFighter();
+        }
+     @isTest
+     public static void testCreateNewFighterAnother(){
+        gameController.CreatingHeroName='Elwen';
+       gameController.SelectRace='Elwuhhb';
+       gameController.CreateNewFighter();
+        }
+  
+      @isTest
+    public static void testGetItems(){
+        System.assert(gameController.getItems().size()==4);
+     }
+
+     @isTest
+    public static void testShowCreatingPane(){
+         gameController.ShowCreationPane();
+        System.assert(gameController.ShowCreationPanel==true);
+    }
+    @isTest
+    public static void testFighterSelection(){
+         gameController.profiles = [SELECT id, Name, Race__c, Health_Points__c, Min_Dmg__c, Max_Dmg__c, Accuracy__c, 
+                  Dexterity__c,  Block_Time__c
+                  FROM Profile__c];
+        Profile__c SelectedHero=new Profile__c();
+           SelectedHero.Name = 'Bobi';
+           SelectedHero.Race__c = 'Human';
+           SelectedHero.Health_Points__c = 700;
+           SelectedHero.Min_Dmg__c = 40;
+           SelectedHero.Max_Dmg__c = 50;
+           SelectedHero.Accuracy__c = 60;
+           SelectedHero.Dexterity__c = 40;
+        gameController.SelectedHero=SelectedHero;
+        gameController.PcFighter = SelectedHero;
+        gameController.FighterSelection();
+        System.assert(gameController.ShowFightingPanel==true);
+        System.assert(gameController.ShowFightResultPanel ==true);
+        System.assert(gameController.ShowSelectionPanel==false);
+    }
+     @isTest private static void TestFightCalculationFirstWin()
+    {
+        GameController testSample = new GameController();
+        
+        List<Profile__c> SelectedHero = [SELECT id, Name, Race__c, Health_Points__c, Min_Dmg__c, Max_Dmg__c, Accuracy__c, Dexterity__c
+                                       FROM Profile__c];
+        
+        String zone = 'head';
+        testSample.hitPlace = zone;
+        testSample.BlockPlace = zone;
+        testSample.first = new Profile(SelectedHero.get(0).name, SelectedHero.get(0).Race__c, Integer.valueOf(SelectedHero.get(0).Health_Points__c),
+                        Integer.valueOf(SelectedHero.get(0).Min_Dmg__c), Integer.valueOf(SelectedHero.get(0).Max_Dmg__c),
+                        Integer.valueOf(SelectedHero.get(0).Accuracy__c), Integer.valueOf(SelectedHero.get(0).Dexterity__c));
+        testSample.second = new Profile(SelectedHero.get(1).name, SelectedHero.get(1).Race__c, Integer.valueOf(SelectedHero.get(1).Health_Points__c),
+                        Integer.valueOf(SelectedHero.get(1).Min_Dmg__c), Integer.valueOf(SelectedHero.get(1).Max_Dmg__c),
+                        Integer.valueOf(SelectedHero.get(1).Accuracy__c), Integer.valueOf(SelectedHero.get(1).Dexterity__c)); 
+        testSample.roundNumber = 1;
+        testSample.FightCalculation();
+        
+        System.assertEquals(0, testSample.second.getHP());
+        System.assertEquals(testSample.fightLogMessage, testSample.first.name + ' Win!');
+    }
+}
