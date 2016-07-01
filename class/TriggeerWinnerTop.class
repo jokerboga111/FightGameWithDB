@@ -1,0 +1,61 @@
+trigger TriggeerWinnerTop on Profile__c (before update,before insert) { 
+    
+    if (Trigger.isInsert) {
+      
+    }
+
+    Map<Id,Profile__c> unitsOld = Trigger.oldMap;
+    Map<Id,Profile__c> unitsNew = Trigger.newMap;
+    //Check how many TopWinnerNumber__c was change.
+    if (Trigger.isUpdate) {
+        Integer changedVictoryCountUnits = 0;
+        for (Profile__c unit: Trigger.new) {
+            if (unitsOld.get(unit.Id).TopWinnerNumber__c != unitsNew.get(unit.Id).TopWinnerNumber__c) {
+                changedVictoryCountUnits++;
+            }
+        }
+      
+        if (changedVictoryCountUnits > 0) {
+            //Find Profiles who dose not inside Trigger.new
+            List<Profile__c> otherUnits = [
+                    SELECT Id, TopWinnerNumber__c,
+                    NumberInTop__c
+                    FROM Profile__c
+                    WHERE Id NOT IN :Trigger.new
+            ];
+            List<Profile__c> newUnits = Trigger.new;
+            List<Profile__c> allUnits = new List<Profile__c>();
+            //Convert all profiles
+            allUnits.addAll(newUnits);
+            allUnits.addAll(otherUnits);
+            // Create comparate List
+            List<SortUnitByWinnerRate> allUnitsSorter = new List<SortUnitByWinnerRate>();
+            //Add all users in sorted List
+            for (Profile__c unit: allUnits) {
+                allUnitsSorter.add(new SortUnitByWinnerRate(unit));
+            }
+            //Sort...
+            allUnitsSorter.sort();
+
+            
+            List<Profile__c> unitsToUpdate = new List<Profile__c>();
+            Integer Top = 0;
+            //Add rank
+            for (SortUnitByWinnerRate sorter: allUnitsSorter) {
+                Top++;
+                Profile__c unit = sorter.getProfile();
+                unit.NumberInTop__c = Top;
+                
+                if (unitsNew.containsKey(unit.Id)) {
+                    //...
+                } else {
+                    unitsToUpdate.add(unit);
+                }
+            }
+
+            update unitsToUpdate;
+
+        }
+
+    }
+ }
