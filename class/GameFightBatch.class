@@ -4,16 +4,31 @@ global class GameFightBatch implements Database.Batchable<sObject>{
     }
 
     global void execute(Database.BatchableContext BC, List<sObject> scope){
-        List<Profile__c> updateUnitList = new List<Profile__c>();
-        for(Profile__c unit: (List<Profile__c>)scope){
-            if (unit.Block_Time__c < DateTime.now().addDays(-1)) {
-                unit.isActive__c = true;
+        List<Profile__c> updateProfileList = new List<Profile__c>();
+        for(Profile__c profile: (List<Profile__c>)scope){
+            if (profile.Block_Time__c < DateTime.now().addDays(-1)) {
+                profile.isActive__c = true;
             }
-            unit.Health_Points__c = 100;
-            updateUnitList.add(unit);
+            if(profile.Race__c=='Human')
+            {
+            profile.Health_Points__c = 700;
+            }
+            else if(profile.Race__c=='Elven')
+            {
+            profile.Health_Points__c = 1000;
+            }
+            else if(profile.Race__c=='DarkSoul' )
+            {
+            profile.Health_Points__c = 800;
+            }
+            else if(profile.Race__c=='Tauren')
+            {
+            profile.Health_Points__c = 500;
+            }
+            updateProfileList.add(profile);
         }
-        update updateUnitList;
-        system.debug(updateUnitList);
+        update updateProfileList;
+        system.debug(updateProfileList);
     }
 
     global void finish(Database.BatchableContext BC){
