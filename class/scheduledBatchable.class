@@ -1,0 +1,11 @@
+global class  scheduledBatchable implements Schedulable {
+
+   global void execute(SchedulableContext sc) {
+
+      GameFightBatch b = new GameFightBatch();
+
+      database.executebatch(b);
+
+   }
+
+}
