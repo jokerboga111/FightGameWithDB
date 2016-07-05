@@ -1,3 +1,6 @@
+/*
+*Game Controller
+*/
 public class GameController
 {
  Public Boolean ShowCreationPanel {get; set;}
@@ -6,98 +9,68 @@ public class GameController
     Public Boolean ShowFightResultPanel {get; set;}
     Public Profile first {get; set;}
     Public Profile second {get; set;}
-    Public Profile__c SelectedHero {get; set;}
+    Public Profile__c SelectedProfile {get; set;}
     Public List<Profile__c> profiles{get; set;}
-    Public List<HeroWrapp> wrappList {get; set;}
+    Public List<ProfileWrapp> wrappList {get; set;}
     Public String SelectRace {get; set;}
-    Public String CreatingHeroName {get; set;}
+    Public String CreatingProfileName {get; set;}
     Public String HitPlace {get; set;}
     Public String BlockPlace {get; set;}
     Public String fightLogMessage {get; set;}
     Public Integer roundNumber {get; set;}
-        
-    /**
-     * Create a Wrapper Class for a Hero to view it on the VF Page with ability to select the hero for a fight
-     */
+    Public Profile__c PcFighter {get; set;}
      
-    public class HeroWrapp
+    /*
+    *Wrapp class for inner information about user
+    */
+    
+    public class ProfileWrapp
     {
         public String id{get; set;}
         public String Name{get; set;}
         public String Race{get; set;}
+        public Integer RateWinner{get; set;}
+        public Integer TopWinner{get; set;}
         public Boolean isSelected{get; set;}
         public Boolean isDisabled{get; set;}
         public DateTime timeToRelease {get; set;}
     }
     
-    /**
-     * In this method, we selected all records from Database and create the list of wrapped objects to 
-     * view their on the VF Page
-     */
-    
-    public void SelectFromDatabase()
-    {
-        profiles = [SELECT id, Name, Race__c, Health_Points__c, Min_Dmg__c, Max_Dmg__c, Accuracy__c, 
-                  Dexterity__c, Image_URL__c, Block_Time__c
-                  FROM Profile__c ORDER BY Race__c];
-        wrappList = new List<HeroWrapp>();
-        
-        DateTime currentDateTime = datetime.now();
-        
-        for (Profile__c p: profiles)
-        {
-            HeroWrapp wrapp = new HeroWrapp();
-            wrapp.id = p.id;
-            wrapp.name = p.name;
-            wrapp.Race = p.Race__c;
-            wrapp.isSelected = false;
-            if (p.Block_Time__c != null && currentDateTime < p.Block_Time__c)
-            {
-                wrapp.isDisabled = true;
-                wrapp.timeToRelease = p.Block_Time__c;
-            }
-            
-            wrappList.add(wrapp);
-        }
-        
-        System.debug(currentDateTime);
-    }
-    
-    public GameController()
+ /*
+ *Standart Game constructor for find info about Users through method SelectFromDatabase
+ */
+ public GameController()
     {
         ShowSelectionPanel = true;
         SelectFromDatabase();        
     }
         
-    /**
-     * In this method, we create fighters for a game. First fighter was select by User, second - automatically
-     * selected by programm
-     */
-    
+ 
+    /*
+    *Method use for insert information in Profile first ,and second(choose User)
+    */
     public void FighterSelection()
     {
         
-      for (HeroWrapp wr: wrappList)
+      for (ProfileWrapp wr: wrappList)
         {
             if (wr.isSelected)
             {
-                SelectedHero = [SELECT id, Name, Race__c, Health_Points__c, Min_Dmg__c, Max_Dmg__c, Accuracy__c, Dexterity__c, Image_URL__c
+                SelectedProfile = [SELECT id, Name, Race__c, Health_Points__c, Min_Dmg__c, Max_Dmg__c, Accuracy__c, Dexterity__c,TopWinnerNumber__c
                                        FROM Profile__c 
                                        WHERE id =: wr.Id];
             }
         }
         
-        first = new Profile(SelectedHero.Name, SelectedHero.Race__c, Integer.valueOf(SelectedHero.Health_Points__c),
-                        Integer.valueOf(SelectedHero.Min_Dmg__c), Integer.valueOf(SelectedHero.Max_Dmg__c),
-                        Integer.valueOf(SelectedHero.Accuracy__c), Integer.valueOf(SelectedHero.Dexterity__c),
-                        SelectedHero.Image_URL__c);
+        first = new Profile(SelectedProfile.Name, SelectedProfile.Race__c, Integer.valueOf(SelectedProfile.Health_Points__c),
+                        Integer.valueOf(SelectedProfile.Min_Dmg__c), Integer.valueOf(SelectedProfile.Max_Dmg__c),
+                        Integer.valueOf(SelectedProfile.Accuracy__c), Integer.valueOf(SelectedProfile.Dexterity__c));
         
         Integer RandomPCFighter = Math.round(Math.floor(Math.random() * (profiles.size() - 0.5)));
-        Profile__c PcFighter = profiles.get(RandomPCFighter);
+           PcFighter = profiles.get(RandomPCFighter);
         second = new Profile(PcFighter.Name, PcFighter.Race__c, Integer.valueOf(PcFighter.Health_Points__c),
                         Integer.valueOf(PcFighter.Min_Dmg__c), Integer.valueOf(PcFighter.Max_Dmg__c),
-                        Integer.valueOf(PcFighter.Accuracy__c), Integer.valueOf(PcFighter.Dexterity__c),
-                        PcFighter.Image_URL__c);
+                        Integer.valueOf(PcFighter.Accuracy__c), Integer.valueOf(PcFighter.Dexterity__c));
         
         ShowFightingPanel = true;
         ShowFightResultPanel = true;
@@ -105,85 +78,93 @@ public class GameController
         roundNumber = 1;
     }
     
+    /*
+    *Method for change to true ShowCreationPanel
+    */
+    
     public void ShowCreationPane()
     {
         ShowCreationPanel = true;
     }          
     
-    /**
-     * In this method, we create new fighter and store it in the database
-     */
-    
+  /*
+  *Create new Fighter (Choose Race ,Human,Elven,DarkSoul,Tauren)
+  */
     public void CreateNewFighter()
     {
-        if ((SelectRace == 'Human') || (SelectRace == 'Ork') || (SelectRace == 'Dwarf') || (SelectRace == 'Elven'))
+        if ((SelectRace == 'Human') 
+        || (SelectRace == 'Elven') 
+        || (SelectRace == 'DarkSoul') 
+        || (SelectRace == 'Tauren'))
         {
         Profile__c createdFighter = new Profile__c();
-        createdFighter.Name = CreatingHeroName;
+        createdFighter.Name = CreatingProfileName;
         
         if (SelectRace == 'Human')
         {
             createdFighter.Race__c = 'Human';
-            createdFighter.Health_Points__c = 700;
-            createdFighter.Min_Dmg__c = 40;
-            createdFighter.Max_Dmg__c = 50;
+            createdFighter.Health_Points__c = 650;
+            createdFighter.Min_Dmg__c = 45;
+            createdFighter.Max_Dmg__c = 63;
             createdFighter.Accuracy__c = 60;
             createdFighter.Dexterity__c = 40;
-            createdFighter.Image_URL__c = 'https://s-media-cache-ak0.pinimg.com/236x/5a/5e/5a/5a5e5af1f3117407341623601720b513.jpg';
+        
         }
-        if (SelectRace == 'Ork')
-        {
-            createdFighter.Race__c = 'Ork';
-            createdFighter.Health_Points__c = 1000;
-            createdFighter.Min_Dmg__c = 30;
-            createdFighter.Max_Dmg__c = 100;
-            createdFighter.Accuracy__c = 40;
-            createdFighter.Dexterity__c = 20;
-            createdFighter.Image_URL__c = 'https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQpT_5jzxE-rFVs5yU23UO9Pki6UZ_lIoSUdyzmVj5qd_FFuEtvfA';
-        }
-        if (SelectRace == 'Dwarf')
-        {
-            createdFighter.Race__c = 'Dwarf';
-            createdFighter.Health_Points__c = 800;
-            createdFighter.Min_Dmg__c = 40;
-            createdFighter.Max_Dmg__c = 80;
-            createdFighter.Accuracy__c = 50;
-            createdFighter.Dexterity__c = 30;
-            createdFighter.Image_URL__c = 'http://pre14.deviantart.net/b30c/th/pre/f/2013/146/a/a/dwarven_paladin___algadon_by_seraph777-d66p38y.jpg';
-        }
-        if (SelectRace == 'Elven')
+       else  if (SelectRace == 'Elven')
         {
             createdFighter.Race__c = 'Elven';
-            createdFighter.Health_Points__c = 500;
-            createdFighter.Min_Dmg__c = 50;
-            createdFighter.Max_Dmg__c = 60;
-            createdFighter.Accuracy__c = 70;
-            createdFighter.Dexterity__c = 45;
-            createdFighter.Image_URL__c = 'https://s-media-cache-ak0.pinimg.com/736x/3c/0e/a5/3c0ea5bd7e1ecb183fd6c79b92628713.jpg';
+            createdFighter.Health_Points__c = 800;
+            createdFighter.Min_Dmg__c = 30;
+            createdFighter.Max_Dmg__c = 50;
+            createdFighter.Accuracy__c = 40;
+            createdFighter.Dexterity__c = 20;
+          
         }
-        
-       
-        ShowCreationPanel = false;
-            try
-            {insert createdFighter;
-                
-            }catch (DMLException e)
-            {}
-        
-        SelectFromDatabase();     
-        } else 
+        else  if (SelectRace == 'DarkSoul')
         {
-          ApexPages.Message myMsg = new ApexPages.Message(ApexPages.Severity.ERROR,'Enter the right Race. Such as: "Human", "Ork", "Dwarf", "Elven"');
-          ApexPages.addMessage(myMsg);
+            createdFighter.Race__c = 'DarkSoul';
+            createdFighter.Health_Points__c = 500;
+            createdFighter.Min_Dmg__c = 65;
+            createdFighter.Max_Dmg__c = 94;
+            createdFighter.Accuracy__c = 50;
+            createdFighter.Dexterity__c = 30;
         }
-       
+        else  if (SelectRace == 'Tauren')
+        {
+            createdFighter.Race__c = 'Tauren';
+            createdFighter.Health_Points__c = 850;
+            createdFighter.Min_Dmg__c = 50;
+            createdFighter.Max_Dmg__c = 69;
+            createdFighter.Accuracy__c = 74;
+            createdFighter.Dexterity__c = 45;
+        }
+        
+       ShowCreationPanel = false;
+        try
+        {
+        insert createdFighter; 
+        }
+        catch(DMLException e)
+        {
+        System.debug('Error'+e);
+        }
+         SelectFromDatabase();     
+        }
+        else 
+        {
+         /*
+          * Error if you choose another race
+          */
+          ApexPages.Message myError = new ApexPages.Message(ApexPages.Severity.ERROR,
+          'Enter the right Race. Such as: "Human", "Elven", "DarkSoul", "Tauren"');
+          ApexPages.addMessage(myError);
+        }
     }
     
-    /**
-     * In this code block we create the list of posible hit and block zones and after user's select use it
-     * in the method FightCalculation() to create the fightLogMessage which reflect on the VF Page
-     */
-    
+
+    /*
+     * Find kicks 
+    */
     public List<SelectOption> getItems() {
         List<SelectOption> options = new List<SelectOption>(); 
         options.add(new SelectOption('Head','Head')); 
@@ -193,12 +174,16 @@ public class GameController
         return options; 
     }      
     
+    
+    /*
+     * Writing all info abount fight in the List logs
+    */
     public void FightCalculation() 
     {
         
       if (first.getHP() > 0 && second.getHP() > 0 ){
-        Integer hitPlacePC = Math.round((Math.floor(Math.random() * 3.5)));
-        Integer blockPlacePC = Math.round((Math.floor(Math.random() * 3.5)));
+        Integer hitPlacePC = Math.round((Math.floor(Math.random() * 3.8)));
+        Integer blockPlacePC = Math.round((Math.floor(Math.random() * 3.8)));
         SelectOption placePCHit = getItems().get(hitPlacePC);
         SelectOption placePCblock = getItems().get(blockPlacePC);
                
@@ -247,24 +232,47 @@ public class GameController
                 }
             }
         }
-     
+     List<Profile__c> pf=new List<Profile__c>();
         if (first.getHP() <= 0 & second.getHP() >= 0)
         {
             fightLogMessage = second.Name + ' Win!'; 
             first.setHP(0);
             try
             {
-                SelectedHero.Block_Time__c = datetime.now().addDays(1);
-                update SelectedHero;
+            /*
+             * If you lose you deactivate for one day
+            */
+                SelectedProfile=deactivate(SelectedProfile);
+                pf=[Select id, Name, Race__c, Health_Points__c, Min_Dmg__c, Max_Dmg__c, Accuracy__c, 
+                  Dexterity__c,Block_Time__c,TopWinnerNumber__c,NumberInTop__c
+                  FROM Profile__c where id!=:SelectedProfile.Id ];
+                pf.add(SelectedProfile);
+                System.debug(pf.size());
+                update pf;
             } catch (DMLException e)
-            {}
+            {
+            System.debug('Error'+e);
+            }
                         
         } else {
             if (first.getHP() >= 0 & second.getHP() <= 0)
             {
                 fightLogMessage = first.Name + ' Win!';
                 second.setHP(0);   
-                
+                first.RateWinnerTop= (Integer)SelectedProfile.TopWinnerNumber__c+1;
+                 try
+            {
+                SelectedProfile.TopWinnerNumber__c= SelectedProfile.TopWinnerNumber__c+1;
+                 pf=[Select id, Name, Race__c, Health_Points__c, Min_Dmg__c, Max_Dmg__c, Accuracy__c, 
+                  Dexterity__c,Block_Time__c,TopWinnerNumber__c,NumberInTop__c
+                  FROM Profile__c where id!=:SelectedProfile.Id ];
+                pf.add(SelectedProfile);
+                System.debug(pf.size());
+                update pf;
+            } catch (DMLException e)
+            {
+            System.debug('Error'+e);
+            }
             } else {
                 if (first.getHP() <= 0 & second.getHP() <= 0)
                 {
@@ -276,5 +284,59 @@ public class GameController
         }
         }
         roundNumber++;             
+    }
+    
+      public void SelectFromDatabase()
+    {
+        profiles = [SELECT id, Name, Race__c, Health_Points__c, Min_Dmg__c, Max_Dmg__c, Accuracy__c, 
+                  Dexterity__c,Block_Time__c,TopWinnerNumber__c,NumberInTop__c
+                  FROM Profile__c ORDER BY NumberInTop__c];
+        wrappList = new List<ProfileWrapp>();
+        
+        DateTime currentDateTime = datetime.now();
+        
+        for (Profile__c p: profiles)
+        {
+            ProfileWrapp wrapp = new ProfileWrapp();
+            wrapp.id = p.id;
+            wrapp.name = p.name;
+            wrapp.Race = p.Race__c;
+            wrapp.TopWinner=(Integer)p.NumberInTop__c;
+            wrapp.RateWinner=(Integer)p.TopWinnerNumber__c;
+            wrapp.isSelected = false;
+            if (p.Block_Time__c != null && currentDateTime < p.Block_Time__c)
+            {
+                wrapp.isDisabled = true;
+                wrapp.timeToRelease = p.Block_Time__c;
+            }
+            
+            wrappList.add(wrapp);
+        }
+        
+        System.debug(currentDateTime);
+    }
+    
+      private Profile__c deactivate(final Profile__c looserProfile) {
+           Profile__c loosersUnitDB=new Profile__c ();
+        if (looserProfile != null) {
+                String looserId = looserProfile.Id;
+                List<Profile__c> loosersProfiles = [
+                        select Block_Time__c, isActive__c
+                        from Profile__c
+                        where Id = :looserProfile.Id
+                ];
+                if (loosersProfiles.size() == 1) {
+                    loosersUnitDB = loosersProfiles.get(0);
+                    loosersUnitDB.isActive__c = false;
+                    loosersUnitDB.Block_Time__c = DateTime.now();
+                    return loosersUnitDB;
+                } else if (loosersProfiles.isEmpty()) {
+                    System.debug('not found');
+                } else {
+                    System.debug('not save');
+                }
+            
+        } 
+                return loosersUnitDB;
     }
 }
