@@ -1,5 +1,10 @@
+/*
+*User class
+*/
 public class Profile
 {
+
+/*User information*/
 
     public String Race{set;get;}
     public String Name{set;get;}
@@ -10,9 +15,22 @@ public class Profile
     public Integer Dexterity{set;get;}
     public String imageURL{set;get;}
     
-    public String getName() {return this.name;}
-    public Integer getHP() {return this.HP;}
-    public void setHP(Integer HP) {this.HP = HP;}
+    public String getName() 
+    {
+    return this.name;
+    }
+    
+    public Integer getHP() 
+    {
+    return this.HP;
+    }
+   
+    public void setHP(Integer HP) 
+    {
+    this.HP = HP;
+    }
+   
+    /*consrtructor for use User information*/
     
     public Profile(String Name, String Race, Integer HP, Integer DMGmin, Integer DMGmax, Integer Accuracy, Integer Dexterity, String imageURL)
     {
@@ -26,6 +44,8 @@ public class Profile
         this.imageURL = ImageURL;
     }
 
+    /*method for calculate damage in game*/
+    
     public static List<Integer> fighting(Profile first, Profile second, boolean firsthit, boolean secondhit)
     {        
         
