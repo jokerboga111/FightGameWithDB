@@ -13,7 +13,6 @@ public class Profile
     public Integer DMGmax{set;get;}
     public Integer Accuracy{set;get;}
     public Integer Dexterity{set;get;}
-    public String imageURL{set;get;}
     
     public String getName() 
     {
@@ -32,7 +31,7 @@ public class Profile
    
     /*consrtructor for use User information*/
     
-    public Profile(String Name, String Race, Integer HP, Integer DMGmin, Integer DMGmax, Integer Accuracy, Integer Dexterity, String imageURL)
+    public Profile(String Name, String Race, Integer HP, Integer DMGmin, Integer DMGmax, Integer Accuracy, Integer Dexterity)
     {
         this.Race = Race;
         this.Name = name;
@@ -41,7 +40,6 @@ public class Profile
         this.DMGmax = DMGmax;
         this.Accuracy = Accuracy;
         this.Dexterity = Dexterity;
-        this.imageURL = ImageURL;
     }
 
     /*method for calculate damage in game*/
