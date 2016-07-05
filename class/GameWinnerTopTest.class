@@ -1,0 +1,68 @@
+/*
+ * test trigger on Profile_c
+ */
+
+@isTest
+public class GameWinnerTopTest {
+    @testSetup
+    static void setup() {
+  
+        Profile__c profile_1 = new Profile__c(Name = 'Profile_1',Race__c='Human');
+        Profile__c profile_2 = new Profile__c(Name = 'Profile_2',Race__c='Tauren');
+        Profile__c profile_3 = new Profile__c(Name = 'Profile_3',Race__c='Darksoul');
+        List<Profile__c> profiles = new List<Profile__c>();
+        profiles.add(profile_1);
+        profiles.add(profile_2);
+        profiles.add(profile_3);
+        insert profiles;
+       }
+
+
+    static void testBehavior() {
+
+       
+        List<Profile__c> profiles = [
+                SELECT Id, Name, TopWinnerNumber__c
+                FROM Profile__c
+                WHERE Name IN ('Unit1', 'Unit2', 'Unit3')
+                ORDER BY Id
+        ];
+        Profile__c profile_1 = profiles.get(0);
+        Profile__c profile_2 = profiles.get(1);
+        Profile__c profile_3 = profiles.get(2);
+        profile_1.TopWinnerNumber__c = 1;
+        update profile_1;
+        update profile_2;
+        List<Profile__c> profilesAfterTest = [
+                SELECT Id, Name, NumberInTop__c,TopWinnerNumber__c
+                FROM Profile__c
+                WHERE Id IN (:profile_1.Id, :profile_2.Id)
+                ORDER BY Id
+        ];
+        Profile__c profile_1AfterTest = profilesAfterTest.get(0);
+        Profile__c profile_2AfterTest = profilesAfterTest.get(1);
+        System.assertEquals(1, profilesAfterTest.get(0).NumberInTop__c, 'not right rank1');
+        System.assertEquals(2, profilesAfterTest.get(1).NumberInTop__c, 'not right rank2');
+
+
+        List<Profile__c> profilesForTest = new List<Profile__c>();
+        profile_1.TopWinnerNumber__c = 6;
+        profile_2.TopWinnerNumber__c = 10;
+        profile_3.TopWinnerNumber__c = 5;
+        profilesForTest.add(profile_1);
+        profilesForTest.add(profile_2);
+        profilesForTest.add(profile_3);
+        update profilesForTest;
+
+        profilesAfterTest = [
+                SELECT Id, Name,NumberInTop__c,TopWinnerNumber__c
+                FROM Profile__c
+                WHERE Id IN (:profile_1.Id, :profile_3.Id, :profile_2.Id)
+                ORDER BY Id
+        ];
+
+        System.assertEquals(2, profilesAfterTest.get(0).NumberInTop__c, 'not right rank1');
+        System.assertEquals(3, profilesAfterTest.get(1).NumberInTop__c, 'not right rank2');
+        System.assertEquals(1, profilesAfterTest.get(2).NumberInTop__c, 'not right rank3');
+    }
+}
