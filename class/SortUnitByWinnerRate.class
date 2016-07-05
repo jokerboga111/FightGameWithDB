@@ -1,0 +1,33 @@
+/*
+* SortUnitByWinnerRate (Comporator)
+*/
+public with sharing class SortUnitByWinnerRate implements Comparable {
+    
+    private Profile__c profile;
+
+    public Profile__c getProfile(){
+        return profile;
+    }
+
+    public SortUnitByWinnerRate(Profile__c profile) {
+        this.profile = profile;
+    }
+
+    public Integer compareTo(Object compareObject) {
+        
+        SortUnitByWinnerRate compareToUnitSorter = (SortUnitByWinnerRate) compareObject;
+     
+        Integer Value = 0;
+        
+        if (profile.TopWinnerNumber__c < compareToUnitSorter.profile.TopWinnerNumber__c)
+        {
+         return Value = 1;
+        }
+        else if (profile.TopWinnerNumber__c  > compareToUnitSorter.profile.TopWinnerNumber__c)
+        {
+         return Value = -1;
+        }
+         return Value;
+    }
+
+}
