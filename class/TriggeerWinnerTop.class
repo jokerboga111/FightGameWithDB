@@ -1,4 +1,7 @@
-trigger TriggeerWinnerTop on Profile__c (before update,before insert) { 
+/*
+ * trigger for top rate in game
+ */
+ trigger TriggeerWinnerTop on Profile__c (before update,before insert) { 
     
     if (Trigger.isInsert) {
       
@@ -6,7 +9,9 @@ trigger TriggeerWinnerTop on Profile__c (before update,before insert) {
 
     Map<Id,Profile__c> unitsOld = Trigger.oldMap;
     Map<Id,Profile__c> unitsNew = Trigger.newMap;
-    //Check how many TopWinnerNumber__c was change.
+    /*
+     * Check how many TopWinnerNumber__c was change.
+    */
     if (Trigger.isUpdate) {
         Integer changedVictoryCountUnits = 0;
         for (Profile__c unit: Trigger.new) {
@@ -16,7 +21,11 @@ trigger TriggeerWinnerTop on Profile__c (before update,before insert) {
         }
       
         if (changedVictoryCountUnits > 0) {
-            //Find Profiles who dose not inside Trigger.new
+            
+            /*
+             * Find Profiles who dose not inside Trigger.new
+             */
+             
             List<Profile__c> otherUnits = [
                     SELECT Id, TopWinnerNumber__c,
                     NumberInTop__c
@@ -25,22 +34,32 @@ trigger TriggeerWinnerTop on Profile__c (before update,before insert) {
             ];
             List<Profile__c> newUnits = Trigger.new;
             List<Profile__c> allUnits = new List<Profile__c>();
-            //Convert all profiles
+            /*
+             * Convert all profiles
+             */
             allUnits.addAll(newUnits);
             allUnits.addAll(otherUnits);
-            // Create comparate List
+            /*
+             * Create comparate List
+             */
             List<SortUnitByWinnerRate> allUnitsSorter = new List<SortUnitByWinnerRate>();
-            //Add all users in sorted List
+            /*
+             * Add all users in sorted List
+             */
             for (Profile__c unit: allUnits) {
                 allUnitsSorter.add(new SortUnitByWinnerRate(unit));
             }
-            //Sort...
+            /*
+             * Sort...
+             */
             allUnitsSorter.sort();
 
             
             List<Profile__c> unitsToUpdate = new List<Profile__c>();
             Integer Top = 0;
-            //Add rank
+            /*
+             * Add rank
+             */
             for (SortUnitByWinnerRate sorter: allUnitsSorter) {
                 Top++;
                 Profile__c unit = sorter.getProfile();
